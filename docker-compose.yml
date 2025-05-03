@@ -1,0 +1,54 @@
+services:
+  chromadb:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+
+  streamlit:
+    build: ./streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - chromadb
+    volumes:
+      - ./streamlit:/app
+
+  jupyter:
+    build: ./jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - /home/ubuntu/doverai/jupyter/notebooks:/home/jovyan/work
+    command: start-notebook.sh --NotebookApp.notebook_dir=/home/jovyan/work --NotebookApp.token='' --NotebookApp.password=''
+    depends_on:
+      - chromadb
+
+  api:
+    build: ./api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      - chromadb
+ 
+
+  mistral:
+    build: ./mistral
+    volumes:
+      - /home/ubuntu/doverai/models:/models
+    working_dir: /app
+    command: python3 run_llm.py
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - streamlit
+      - jupyter
+      - chromadb

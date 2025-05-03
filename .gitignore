@@ -1,0 +1,17 @@
+# Ignore Docker artifacts
+*.tar
+*.img
+*.log
+__pycache__/
+.env
+.vscode/
+.docker/
+docker-compose.override.yml
+
+# Ignore folders
+models/
+api/__pycache__/
+*.gguf
+*.pt
+*.pkl
+*.ipynb_checkpoints/
